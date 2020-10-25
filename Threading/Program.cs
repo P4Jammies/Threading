@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Threading
 {
@@ -6,25 +8,52 @@ namespace Threading
     {
         static void Main(string[] args)
         {
-            int darts, threads;
+            int darts, threads, hits;
             Console.WriteLine("How many threads would you like to open?");
             threads = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("How many darts would you like to throw in each thread?");
             darts = Convert.ToInt32(Console.ReadLine());
 
+            List<Thread> threadList = new List<Thread>(threads);
+            List<FindPiThread> piThreads = new List<FindPiThread>(threads);
 
+            for (int i = 0; i < threads; i++)
+            {
+                FindPiThread piThread = new FindPiThread(darts);
+                piThreads.Add(piThread);
+            
+                Thread thread = new Thread(new ThreadStart(piThread.throwDarts));
+                threadList.Add(thread);
+                thread.Start();
+
+                Thread.Sleep(16);
+            }
+            
+            foreach (Thread thread in threadList)
+            {
+                thread.Join();
+            }
+
+            hits = 0;
+            foreach (FindPiThread piThread in piThreads)
+            {
+                hits += piThread.target();
+            }
+
+            Console.WriteLine( 4 * (hits / (double)(darts * threads)) );
+            Thread.Sleep(2000);
         }
     }
 
     class FindPiThread
     {
         int darts;
-        int hits { get { return hits; } set { hits = value; } }
+        int hits;
         Random throws;
 
-        FindPiThread(int ammo)
+        public FindPiThread(int d)
         {
-            darts = ammo;
+            darts = d;
             hits = 0;
             throws = new Random();
         }
@@ -41,6 +70,11 @@ namespace Threading
                     hits++;
                 }
             }
+        }
+
+        public int target()
+        {
+            return hits;
         }
     }
 }
