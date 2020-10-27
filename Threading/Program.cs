@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Threading
@@ -16,6 +17,9 @@ namespace Threading
 
             List<Thread> threadList = new List<Thread>(threads);
             List<FindPiThread> piThreads = new List<FindPiThread>(threads);
+            
+            var calctime = new Stopwatch();
+            calctime.Start();
 
             for (int i = 0; i < threads; i++)
             {
@@ -40,7 +44,10 @@ namespace Threading
                 hits += piThread.target();
             }
 
-            Console.WriteLine( 4 * (hits / (double)(darts * threads)) );
+            double pi = 4 * (hits / (double)(darts * threads));
+            calctime.Stop();
+
+            Console.WriteLine($"Took {calctime.ElapsedMilliseconds} ms to calculate pi: {pi}\n");
             Thread.Sleep(2000);
         }
     }
